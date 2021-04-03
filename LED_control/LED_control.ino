@@ -6,12 +6,14 @@ void setup() {
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(2, OUTPUT);
+ 
   
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
  Serial.begin(9600);
+  analogWrite(2, 5); // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
   digitalWrite(4, HIGH);
   delay(1000);
   digitalWrite(4, LOW);
@@ -20,12 +22,12 @@ void loop() {
   delay(1000);
   digitalWrite(5, LOW);
   delay(1000);
-  Serial.print("Asleep"); Serial.println(n);
-   n=n+1;
-   digitalWrite(2, HIGH);
-  Serial.end();
-  LowPower.sleep(5000);
-  digitalWrite(2, LOW);
+//  Serial.print("Asleep"); Serial.println(n);
+//   n=n+1;
+//   digitalWrite(2, HIGH);
+//  Serial.end();
+//  LowPower.sleep(5000);
+//  digitalWrite(2, LOW);
   //Serial.println("awake");
   
   
