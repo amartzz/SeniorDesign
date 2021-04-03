@@ -49,6 +49,7 @@ void setup(void)
   Wire.begin();
   pinMode(greenLEDmosfet, OUTPUT);
   pinMode(redLEDmosfet, OUTPUT);
+  pinMode(2, OUTPUT);
   while (!Serial);
   
   enable_WiFi();
@@ -66,6 +67,7 @@ void setup(void)
  
 void loop(void)
 {
+  
   client = server.available();
   if (client) {
     printWEB();
@@ -76,8 +78,17 @@ void loop(void)
     measure_data();
     // pause
     Serial.println("------------------------sleep");
-    delay(5000);
+    //delay(5000);
+    LowPower.sleep(5000);
 //    delay((1800*10^3)/time_scale);// delay it by 30 minutes
+    
+    enable_WiFi();
+    connect_WiFi();
+    server.begin();
+    printWifiStatus();
+    ThingSpeak.begin(ThingSpeakClient);
+
+
   }
 }
 
@@ -203,6 +214,9 @@ void connect_WiFi() {
     // wait 10 seconds for connection:
     delay(10000);
   }
+  digitalWrite(2, HIGH);
+  delay(1000);
+  digitalWrite(2, LOW);
   Serial.println("");
   Serial.println("WiFi connected");
 }
