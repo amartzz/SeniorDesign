@@ -39,9 +39,9 @@ int redLEDmosfet = 4;
 WiFiClient client = server.available();
 WiFiSSLClient email_client;
 WiFiClient  ThingSpeakClient;
-unsigned long myChannelNumber = 1338345;
+unsigned long myChannelNumber = 1350272;
 
-const char * myWriteAPIKey = "0X41J157YNCX2MFL";
+const char * myWriteAPIKey = "CPXLRC8DPETXQQ6I";
 
 void setup(void)
 {
@@ -161,26 +161,24 @@ float avg_ambient(){
 float thirty_LED(float ambient){
   float voltage = 0.0;
   float total_voltage = 0.0;
+  float total_voltage_sqr= 0.0;
   float snr = 0.0;
-  float total_snr = 0.0;
-  float total_sqr = 0.0;
   float average_snr = 0.0;
+  float average_voltage=0.0;
   
   for(int i = 0; i < 30; i++){
-    voltage = readChannel(ADS1115_COMP_0_GND);
+    voltage = readChannel(ADS1115_COMP_0_GND);    
     total_voltage += voltage;
-    snr = 20*log10(voltage/ambient);
-    
-    total_snr += snr;
-    total_sqr += snr*snr;
+    total_voltage_sqr+= total_voltage*total_voltage;      
     delay(20);
   }
   delay(100);
 
-  average_snr = total_snr/30;
-  STD = sqrt(abs((total_sqr/30) - average_snr*average_snr));
-  Serial.print("Average voltage: "); Serial.println(total_voltage/30);
-  Serial.print("Average SNR: "); Serial.println(average_snr);
+  average_voltage= total_voltage/30;
+  STD = sqrt(abs((total_voltage_sqr/30) - average_voltage*average_voltage));
+  snr = 20*log10((average_voltage-ambient)/STD);  
+  Serial.print("Average voltage: "); Serial.println(average_voltage);
+  Serial.print("Average SNR: "); Serial.println(snr);
   Serial.print("STD: "); Serial.println(STD);
   Serial.println();
   return average_snr;

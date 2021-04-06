@@ -1,10 +1,9 @@
 #include <Wire.h>
-#include <Adafruit_ADS1015.h>
- 
-Adafruit_ADS1015 ads1015;
+#include <ADS1115_WE.h> 
 
-int sensorPin = A1;
+ int sensorPin = A1;
 int sensorValue = 0;
+ADS1115_WE adc = ADS1115_WE();
 
 void setup(void)
 {
@@ -14,7 +13,7 @@ void setup(void)
   
   Serial.println("Getting single-ended readings from AIN0");
   Serial.println("ADC Range: +/- 3.3V (1 bit = 3mV)");
-  ads1015.begin();
+  
   read_pd();
 }
  
@@ -48,14 +47,31 @@ void loop(void)
   delay(2000);
 }
 
+float readChannel(ADS1115_MUX channel) {
+  float voltage = 0.0;
+  adc.setCompareChannels(channel);
+  adc.startSingleMeasurement();
+  while(adc.isBusy()){}
+  voltage = adc.getResult_mV();
+  return voltage; 
+}
+
 void read_pd(void)
 {
-  int16_t adc0, adc_voltage;
- 
-  adc0 = ads1015.readADC_SingleEnded(0);
-  adc_voltage = 3 * adc0;
-
-  Serial.print("AIN0: "); Serial.println(adc0);
-  Serial.print(adc_voltage); Serial.println(" mV");
-  Serial.println(" ");
+  float voltage = 0.0;
+  float total = 0.0;
+  for(int i=0; i<30; i++){
+    Serial.print("made it here");
+    voltage = readChannel(ADS1115_COMP_0_GND);
+    total += voltage;
+    delay(5);
+  }
+  Serial.print("Average voltage: "); Serial.println(total/30);
+  
 }
+
+
+
+
+
+  
