@@ -13,7 +13,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
  Serial.begin(9600);
-  analogWrite(2, 5); // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
+  analogWrite(2, 250); // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
   digitalWrite(4, HIGH);
   delay(1000);
   digitalWrite(4, LOW);

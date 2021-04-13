@@ -9,9 +9,10 @@
 ADS1115_WE adc = ADS1115_WE();
 
 int del = 500;
-int snr_threshold = -1;
+int snr_threshold = -5000000000000000;
 int time_scale = 20;
 float STD = 0.0;
+float voltage_global= 0.0;
 
 const char* ssid = "InThisHouse";    //  your network SSID (name)
 const char* password = "dorneyville";  // your network password
@@ -76,7 +77,14 @@ void loop(void)
     measure_data();
     // pause
     Serial.println("------------------------sleep");
-    delay(5000);
+//    delay(5000);
+    LowPower.sleep(1800*10^3);
+    enable_WiFi();
+    connect_WiFi();
+    server.begin();
+    printWifiStatus();
+    ThingSpeak.begin(ThingSpeakClient);
+    
 //    delay((1800*10^3)/time_scale);// delay it by 30 minutes
   }
 }
@@ -96,6 +104,8 @@ void measure_data() {
   float green_STD = 0.0;
   float red_avg_snr = 0.0;
   float red_STD = 0.0;
+  float red_avg_v = 0.0;
+  float green_avg_v = 0.0;
 
   // ambient reading
   Serial.println("ambient");
@@ -107,6 +117,7 @@ void measure_data() {
   Serial.println("green");
   green_avg_snr = thirty_LED(ambient);
   green_STD = STD; 
+  green_avg_v = voltage_global;
   delay(del);
   digitalWrite(greenLEDmosfet, LOW);
 
@@ -116,6 +127,7 @@ void measure_data() {
   Serial.println("red");
   red_avg_snr = thirty_LED(ambient);
   red_STD = STD; 
+  red_avg_v = voltage_global;
   delay(del);
   digitalWrite(redLEDmosfet, LOW);
 
@@ -124,6 +136,8 @@ void measure_data() {
   ThingSpeak.setField(2, red_avg_snr);
   ThingSpeak.setField(3, green_STD);
   ThingSpeak.setField(4, red_STD);
+  ThingSpeak.setField(5, green_avg_v);
+  ThingSpeak.setField(6, red_avg_v);
   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
   Serial.println("Data uploaded to ThingS");
 
@@ -163,25 +177,28 @@ float thirty_LED(float ambient){
   float total_voltage = 0.0;
   float total_voltage_sqr= 0.0;
   float snr = 0.0;
-  float average_snr = 0.0;
   float average_voltage=0.0;
   
   for(int i = 0; i < 30; i++){
     voltage = readChannel(ADS1115_COMP_0_GND);    
     total_voltage += voltage;
-    total_voltage_sqr+= total_voltage*total_voltage;      
+    total_voltage_sqr += voltage*voltage;      
     delay(20);
   }
   delay(100);
 
-  average_voltage= total_voltage/30;
+  average_voltage = total_voltage/30;
+  voltage_global = average_voltage;
   STD = sqrt(abs((total_voltage_sqr/30) - average_voltage*average_voltage));
+  if (STD == 0) {
+    STD = 0.01;
+  }
   snr = 20*log10((average_voltage-ambient)/STD);  
   Serial.print("Average voltage: "); Serial.println(average_voltage);
   Serial.print("Average SNR: "); Serial.println(snr);
   Serial.print("STD: "); Serial.println(STD);
   Serial.println();
-  return average_snr;
+  return snr;
 }
 
 void connect_WiFi() {
